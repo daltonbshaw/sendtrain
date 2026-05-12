@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Send Train — Periodized Climbing Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --chalk:#F5F2EC;--rock:#1A1A18;--crag:#2C2B27;--granite:#3E3D38;
+    --slate:#6B6A63;--limestone:#9B9A92;--sandstone:#D4C9B0;
+    --rope:#C8763A;--rope-light:#E8A96A;
+    --moss:#4A6741;--moss-light:#7A9E73;
+    --sky:#4A7FA5;--sky-light:#7AAFC5;
+    --purple:#6B4F8A;--purple-light:#9B7FBA;
+    --red-light:#C86060;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--rock);color:var(--chalk);min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.6;}
+  .app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 24px 80px;}
+
+  header{padding:48px 0 36px;border-bottom:1px solid var(--granite);margin-bottom:36px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:60px;letter-spacing:0.03em;line-height:0.9;}
+  .logo span{display:block;font-size:18px;letter-spacing:0.25em;color:var(--rope);font-family:'DM Mono',monospace;font-weight:400;margin-top:6px;}
+  .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+  .level-badge{font-family:'DM Mono',monospace;font-size:12px;color:var(--rope);border:1px solid var(--rope);padding:6px 14px;letter-spacing:0.1em;}
+  .peak-badge{font-family:'DM Mono',monospace;font-size:12px;color:var(--moss-light);border:1px solid var(--moss);padding:6px 14px;letter-spacing:0.08em;}
+
+  .phase-banner{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--granite);border:1px solid var(--granite);margin-bottom:36px;}
+  .phase-block{padding:20px 22px;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden;}
+  .phase-block.active-phase{background:var(--crag);}
+  .phase-block:not(.active-phase){background:#222220;opacity:0.55;}
+  .phase-block:hover{opacity:1;background:var(--crag);}
+  .phase-num{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.18em;color:var(--slate);margin-bottom:6px;}
+  .phase-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.04em;line-height:1;margin-bottom:4px;}
+  .phase-weeks{font-family:'DM Mono',monospace;font-size:11px;color:var(--limestone);margin-bottom:8px;}
+  .phase-desc{font-size:12px;color:var(--slate);line-height:1.5;}
+  .phase-bar{position:absolute;bottom:0;left:0;right:0;height:3px;}
+  .bar-base{background:var(--sky);}
+  .bar-power{background:var(--rope);}
+  .bar-perf{background:var(--moss-light);}
+
+  .section-heading{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.2em;color:var(--slate);text-transform:uppercase;margin-bottom:16px;}
+  .roadmap{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;background:var(--granite);border:1px solid var(--granite);margin-bottom:36px;}
+  .roadmap-week{padding:14px 10px;text-align:center;cursor:pointer;transition:all 0.15s;}
+  .roadmap-week.rw-base{background:rgba(74,127,165,0.12);}
+  .roadmap-week.rw-deload{background:rgba(107,106,99,0.12);}
+  .roadmap-week.rw-power{background:rgba(200,118,58,0.12);}
+  .roadmap-week.rw-perf{background:rgba(74,103,65,0.12);}
+  .roadmap-week.rw-active{outline:2px solid var(--rope);outline-offset:-2px;}
+  .roadmap-week:hover{filter:brightness(1.4);}
+  .rw-num{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;}
+  .rw-base .rw-num{color:var(--sky);}
+  .rw-deload .rw-num{color:var(--limestone);}
+  .rw-power .rw-num{color:var(--rope-light);}
+  .rw-perf .rw-num{color:var(--moss-light);}
+  .rw-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.06em;color:var(--slate);margin-top:4px;}
+
+  .week-nav{display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+  .week-label{font-family:'DM Mono',monospace;font-size:13px;color:var(--limestone);letter-spacing:0.1em;flex:1;}
+  .week-phase-tag{font-family:'DM Mono',monospace;font-size:11px;padding:4px 12px;letter-spacing:0.08em;}
+  .tag-base{background:rgba(74,127,165,0.15);color:var(--sky-light);border:1px solid rgba(74,127,165,0.3);}
+  .tag-deload{background:rgba(107,106,99,0.15);color:var(--limestone);border:1px solid rgba(107,106,99,0.3);}
+  .tag-power{background:rgba(200,118,58,0.15);color:var(--rope-light);border:1px solid rgba(200,118,58,0.3);}
+  .tag-perf{background:rgba(74,103,65,0.15);color:var(--moss-light);border:1px solid rgba(74,103,65,0.3);}
+  .week-btn{background:none;border:1px solid var(--granite);color:var(--limestone);font-family:'DM Mono',monospace;font-size:12px;padding:8px 16px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;}
+  .week-btn:hover:not(:disabled){border-color:var(--rope);color:var(--rope);}
+  .week-btn:disabled{opacity:0.3;cursor:default;}
+
+  .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--granite);border:1px solid var(--granite);margin-bottom:32px;}
+  .day-col{background:var(--crag);cursor:pointer;transition:background 0.15s;min-height:190px;display:flex;flex-direction:column;}
+  .day-col:hover{background:#333330;}
+  .day-col.active{background:#2A2925;outline:2px solid var(--rope);outline-offset:-2px;}
+  .day-header{padding:12px 12px 10px;border-bottom:1px solid var(--granite);display:flex;flex-direction:column;gap:4px;}
+  .day-abbr{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--slate);text-transform:uppercase;}
+  .day-num{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:1;color:var(--chalk);}
+  .day-col.today .day-num{color:var(--rope);}
+  .day-type-dot{width:6px;height:6px;border-radius:50%;margin-top:2px;}
+  .dot-climb{background:var(--purple-light);}
+  .dot-outdoor{background:var(--moss-light);}
+  .dot-bike{background:var(--rope-light);}
+  .dot-rest{background:var(--slate);}
+  .day-content{padding:10px 12px;flex:1;}
+  .day-type-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:7px;display:inline-block;padding:2px 7px;}
+  .label-climb{background:rgba(107,79,138,0.2);color:var(--purple-light);}
+  .label-outdoor{background:rgba(74,103,65,0.25);color:var(--moss-light);}
+  .label-bike{background:rgba(200,118,58,0.2);color:var(--rope-light);}
+  .label-rest{background:rgba(107,106,99,0.2);color:var(--limestone);}
+  .label-deload{background:rgba(107,106,99,0.12);color:var(--slate);}
+  .day-title{font-size:12px;font-weight:500;color:var(--chalk);line-height:1.3;margin-bottom:7px;}
+  .day-bullets{list-style:none;display:flex;flex-direction:column;gap:3px;}
+  .day-bullets li{font-size:10px;color:var(--limestone);line-height:1.4;padding-left:10px;position:relative;}
+  .day-bullets li::before{content:'—';position:absolute;left:0;color:var(--slate);font-size:9px;top:1px;}
+
+  .detail-panel{background:var(--crag);border:1px solid var(--granite);margin-bottom:32px;display:none;animation:slideIn 0.2s ease;}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+  .detail-panel.visible{display:block;}
+  .detail-top{border-left:3px solid var(--rope);padding:24px 28px 18px;}
+  .detail-header{display:flex;align-items:baseline;gap:16px;margin-bottom:4px;flex-wrap:wrap;}
+  .detail-day-name{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1;}
+  .detail-type{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.1em;color:var(--rope);}
+  .detail-phase-note{font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);}
+
+  .session-blocks{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--granite);border-top:1px solid var(--granite);}
+  .session-block{padding:22px;background:var(--rock);}
+  .session-block-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--granite);}
+  .session-num{font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1;}
+  .session-block-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.12em;color:var(--limestone);text-transform:uppercase;}
+  .session-items{list-style:none;display:flex;flex-direction:column;gap:9px;}
+  .session-items li{font-size:13px;color:var(--sandstone);line-height:1.5;display:flex;gap:8px;}
+  .session-items li::before{content:'▸';color:var(--rope);flex-shrink:0;font-size:10px;margin-top:3px;}
+  .session-items li code{font-family:'DM Mono',monospace;font-size:11px;background:rgba(200,118,58,0.12);color:var(--rope-light);padding:1px 5px;}
+  .session-foot{padding:14px 22px;border-top:1px solid var(--granite);font-size:12px;color:var(--limestone);font-style:italic;line-height:1.6;border-left:2px solid var(--rope);}
+
+  .detail-sections{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:22px 28px 24px;}
+  .detail-section h3{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--slate);text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--granite);}
+  .detail-list{list-style:none;display:flex;flex-direction:column;gap:9px;}
+  .detail-list li{font-size:13px;color:var(--sandstone);line-height:1.5;display:flex;gap:8px;}
+  .detail-list li::before{content:'▸';color:var(--rope);flex-shrink:0;font-size:10px;margin-top:3px;}
+  .detail-note{padding:12px 16px;background:rgba(200,118,58,0.06);border-left:2px solid var(--rope);font-size:12px;color:var(--limestone);font-style:italic;grid-column:1/-1;line-height:1.6;}
+
+  .tracker-outer{background:var(--granite);border:1px solid var(--granite);margin-bottom:12px;}
+  .tracker-header-row{display:grid;grid-template-columns:70px repeat(7,1fr);background:#222220;border-bottom:1px solid var(--granite);}
+  .tracker-header-cell{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;color:var(--slate);padding:8px 0;text-align:center;text-transform:uppercase;}
+  .tracker-row{display:grid;grid-template-columns:70px repeat(7,1fr);gap:1px;background:var(--granite);border-bottom:1px solid var(--granite);}
+  .tracker-row:last-child{border-bottom:none;}
+  .tracker-week-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);display:flex;align-items:center;padding:0 10px;background:var(--crag);}
+  .tracker-cell{background:var(--crag);aspect-ratio:1;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-size:14px;position:relative;}
+  .tracker-cell:hover{background:#333330;}
+  .tracker-cell.done{background:rgba(74,103,65,0.2);}
+  .tracker-cell.done::after{content:'✓';color:var(--moss-light);font-size:14px;}
+  .tracker-cell.skipped{background:rgba(160,48,48,0.15);}
+  .tracker-cell.skipped::after{content:'✕';color:var(--red-light);font-size:12px;}
+  .tracker-cell span{font-family:'DM Mono',monospace;font-size:9px;color:var(--granite);}
+  .tracker-cell.done span,.tracker-cell.skipped span{display:none;}
+  .tracker-legend{display:flex;gap:20px;font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);flex-wrap:wrap;}
+  .tl-item{display:flex;align-items:center;gap:6px;}
+  .tl-dot{width:8px;height:8px;border-radius:50%;}
+
+  @media(max-width:900px){
+    .session-blocks{grid-template-columns:1fr;}
+    .phase-banner{grid-template-columns:1fr;}
+    .detail-sections{grid-template-columns:1fr;}
+    .roadmap{grid-template-columns:repeat(4,1fr);}
+  }
+  @media(max-width:680px){
+    .logo{font-size:42px;}
+    .calendar{grid-template-columns:repeat(4,1fr);}
+    header{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="logo">Send<br>Train<span>Periodized Climbing Program</span></div>
+  <div class="header-right">
+    <div class="level-badge">V9+ // ADVANCED</div>
+    <div class="peak-badge">PEAK TARGET // AUGUST 2025</div>
+  </div>
+</header>
+
+<div class="phase-banner" id="phaseBanner"></div>
+
+<div style="margin-bottom:36px">
+  <div class="section-heading">8-Week Roadmap — click any week to jump</div>
+  <div class="roadmap" id="roadmap"></div>
+</div>
+
+<div class="week-nav">
+  <span class="week-label" id="weekLabel"></span>
+  <span class="week-phase-tag" id="weekPhaseTag"></span>
+  <button class="week-btn" id="prevBtn" onclick="changeWeek(-1)">← PREV</button>
+  <button class="week-btn" id="nextBtn" onclick="changeWeek(1)">NEXT →</button>
+</div>
+
+<div class="calendar" id="calendar"></div>
+<div class="detail-panel" id="detailPanel"></div>
+
+<div style="margin-bottom:40px">
+  <div class="section-heading">Session Tracker — click to toggle done / skipped</div>
+  <div class="tracker-outer">
+    <div class="tracker-header-row">
+      <div class="tracker-header-cell" style="text-align:left;padding-left:10px;">Wk</div>
+      <div class="tracker-header-cell">Mon</div>
+      <div class="tracker-header-cell">Tue</div>
+      <div class="tracker-header-cell">Wed</div>
+      <div class="tracker-header-cell">Thu</div>
+      <div class="tracker-header-cell">Fri</div>
+      <div class="tracker-header-cell">Sat</div>
+      <div class="tracker-header-cell">Sun</div>
+    </div>
+    <div id="trackerRows"></div>
+  </div>
+  <div class="tracker-legend" style="margin-top:12px;">
+    <div class="tl-item"><div class="tl-dot" style="background:var(--moss-light)"></div>Done</div>
+    <div class="tl-item"><div class="tl-dot" style="background:var(--red-light)"></div>Skipped</div>
+    <div class="tl-item"><div class="tl-dot" style="background:var(--granite)"></div>Upcoming</div>
+  </div>
+</div>
+
+</div>
+<script>
+const WEEK_PHASES=[
+  {phase:'base',label:'BASE W1'},{phase:'base',label:'BASE W2'},{phase:'base',label:'BASE W3'},
+  {phase:'deload',label:'DELOAD'},
+  {phase:'power',label:'POWER W1'},{phase:'power',label:'POWER W2'},
+  {phase:'perf',label:'PEAK W1'},{phase:'perf',label:'PEAK W2'}
+];
+const PHASES=[
+  {id:'base',name:'Base Strength',weeks:'Weeks 1–3 + Deload',barClass:'bar-base',color:'var(--sky)',
+   desc:'High volume, moderate intensity. Hangboard repeaters, ARCing, general conditioning. Build tendon resilience.'},
+  {id:'power',name:'Power & Intensity',weeks:'Weeks 5–6',barClass:'bar-power',color:'var(--rope)',
+   desc:'Volume drops, intensity climbs. Max hangs, limit bouldering, weighted movements. Raw strength peaks here.'},
+  {id:'perf',name:'Performance Peak',weeks:'Weeks 7–8',barClass:'bar-perf',color:'var(--moss-light)',
+   desc:'Short, sharp, specific. 4×4s, projecting, reduced gym volume. Convert strength into climbing performance.'}
+];
+const DAYS=['MON','TUE','WED','THU','FRI','SAT','SUN'];
+const DAY_NAMES={MON:'Monday',TUE:'Tuesday',WED:'Wednesday',THU:'Thursday',FRI:'Friday',SAT:'Saturday',SUN:'Sunday'};
+
+// Program starts next Monday from today
+const programStart=(function(){
+  const now=new Date(),day=now.getDay(),d=new Date(now);
+  d.setDate(now.getDate()+(day===1?0:day===0?1:8-day));
+  d.setHours(0,0,0,0);return d;
+})();
+
+let currentWeek=0,activeDay=null;
+
+function getPhase(w){return w<=2?'base':w===3?'deload':w<=5?'power':'perf';}
+
+// ── CALENDAR DAY CONFIG ───────────────────────────────────────────────────────
+function dayConfig(phase,abbr){
+  const base={
+    MON:{type:'bike',label:'Biking',dotClass:'dot-bike',labelClass:'label-bike',title:'Recovery Ride',bullets:['Easy zone 2, 45–60 min','Flush fatigue','No hard efforts']},
+    TUE:{type:'climb',label:'Gym Climbing',dotClass:'dot-climb',labelClass:'label-climb',
+      title:phase==='base'?'Fingers & Volume':phase==='deload'?'Light Climbing':phase==='power'?'Max Hangs & Limit':'Sharpening Session',
+      bullets:phase==='base'?['Hangboard repeaters','ARC climbing 20 min','Weighted pull-ups']:
+              phase==='deload'?['Easy problems only','No projecting','Mobility focus']:
+              phase==='power'?['Max hangs weighted','Limit bouldering V9–V11','Campus optional']:
+              ['Limit problems × 3–4','Project moves','Reduced volume']},
+    WED:{type:'bike',label:'Biking',dotClass:'dot-bike',labelClass:'label-bike',title:'Active Recovery',bullets:['Moderate 60–90 min ride','Optional yoga','Hip & shoulder focus']},
+    THU:{type:'climb',label:'Gym Climbing',dotClass:'dot-climb',labelClass:'label-climb',
+      title:phase==='base'?'Endurance & Conditioning':phase==='deload'?'Movement & Mobility':phase==='power'?'4×4s & Strength':'Power Endurance',
+      bullets:phase==='base'?['ARCing 2×20 min','Volume bouldering','Antagonist work']:
+              phase==='deload'?['Moderate V4–V6 only','Downclimbing drill','Light antagonists']:
+              phase==='power'?['4×4s V7–V9','Front lever progressions','Weighted dips']:
+              ['Targeted 4×4s × 3 rounds','Route simulation','Full flexibility']},
+    FRI:{type:'rest',label:'Rest',dotClass:'dot-rest',labelClass:'label-rest',title:'Rest & Prep',bullets:['Full rest','Pack gear','Check weather']},
+    SAT:{type:'outdoor',label:'Outdoor',dotClass:'dot-outdoor',labelClass:'label-outdoor',
+      title:phase==='perf'?'Project Day — Peak':'Project Day',
+      bullets:['4–6 hard attempts','Volume after','Warm up well']},
+    SUN:{type:'outdoor',label:'Outdoor / Rest',dotClass:'dot-outdoor',labelClass:'label-outdoor',title:'Crag Day 2 or Rest',bullets:['Different style than Sat','Easier intensity','Listen to your body']}
+  };
+  const c={...base[abbr]};
+  if(phase==='deload'&&(abbr==='TUE'||abbr==='THU'))c.labelClass='label-deload';
+  return c;
+}
+
+// ── GYM SESSION DATA ──────────────────────────────────────────────────────────
+const GYM={
+  base:{
+    TUE:{title:'Base — Fingers',
+      warmup:['Easy traversing 10 min, footwork focus','Progressive problems: 5×V4 then 5×V6','Wrist circles and finger tendon warm-up 5 min','Shoulder CARs × 10 each side'],
+      climbing:['Hangboard repeaters: <code>7s on / 3s off × 6 reps × 4 sets</code>, 20mm edge','ARC climbing: 20 min continuous on easy terrain (no shaking off)','Technique focus: silent feet on every problem'],
+      strength:['Weighted pull-ups: <code>4×8 at +10–15kg</code>','Ring rows: <code>3×12</code>','Dead hangs on rings: <code>3×20s</code>','Hip flexor stretch 2 min per side','Shoulder capsule and chest opener stretches'],
+      note:'Base phase: volume over intensity. Tendons adapt slowly — never skip the warm-up.'},
+    THU:{title:'Base — Endurance',
+      warmup:['Easy traversing 10 min','Dynamic movement: hip rocking, leg swings, arm circles','3×V4 focusing on body tension and hip engagement','Antagonist warm-up: push-up negatives × 10'],
+      climbing:['ARCing: <code>2×20 min</code> on juggy moderate terrain, rest 5 min between sets','Volume bouldering: 10–15 problems at V5–V7','Read every move before you climb each problem'],
+      strength:['Antagonist circuit: push-ups <code>3×20</code>, dips <code>3×12</code>','Wrist extensions with light weight: <code>3×15</code>','Reverse curls: <code>3×15</code>','Pigeon pose 90s per side','Hamstring and hip flexor stretching 10 min'],
+      note:'Thursday builds your aerobic base and conditions joints. Keep it controlled and deliberate.'}
+  },
+  deload:{
+    TUE:{title:'Deload — Active Recovery',
+      warmup:['Easy traversing 10 min, very relaxed pace','Joint mobility: wrists, shoulders, hips 5 min','3–4 easy problems, focus on movement quality only'],
+      climbing:['Light bouldering: 8–10 problems at V5–V6 max','No limit problems, no projecting today','Focus on technique and efficiency over difficulty'],
+      strength:['Bodyweight pull-ups: <code>2×6, easy</code>','Shoulder circles and resistance band work','Full flexibility routine 15–20 min','Foam roll: forearms, lats, thoracic spine'],
+      note:'Deload week — resist the urge to train hard. This rest is what makes Phase 2 possible.'},
+    THU:{title:'Deload — Movement & Mobility',
+      warmup:['Easy traversing 10 min','Hip CARs × 10 per side','3 easy problems, movement focus only'],
+      climbing:['Moderate problems V4–V6, footwork precision focus','Downclimb every problem you climb up','Experiment with body position: open hip, drop knee, backflag'],
+      strength:['Light antagonist: push-ups <code>2×10</code>, wrist extensions <code>2×12</code>','Yoga flow or full body stretch 20 min','Scan for any niggles or soreness — note them'],
+      note:'If anything feels sore or tweaky this week, take an extra rest day — better to arrive in Phase 2 at 100%.'}
+  },
+  power:{
+    TUE:{title:'Power — Max Hangs',
+      warmup:['Easy traversing 15 min, progressively harder','3×V6 then 2×V8 warm-up problems','Finger tendon activation: progressive hangs at 40%, 60%, 80% effort','Band pull-aparts: <code>2×15</code>'],
+      climbing:['Max hangs: <code>10s on / 3 min rest × 5–6 sets</code>, 20mm half-crimp, add weight','Limit bouldering: <code>4–6 problems V9–V11</code>, full rest between (8–10 min each)','Campus board if feeling strong: <code>1–3 ladder sets max</code>'],
+      strength:['Weighted pull-ups: <code>5×3 at heavy load (+25–35kg)</code>','Ring muscle-up negatives: <code>3×3–5</code>','L-sit holds: <code>3×15s</code>','Shoulder and chest stretching','Wrist flexion and extension mobility work'],
+      note:'Power phase: intensity is high. If fingers feel off, drop the weight. Never push through finger pain.'},
+    THU:{title:'Power — Strength Endurance',
+      warmup:['Easy traversing 10 min','Dynamic stretches: leg swings, hip circles, arm swings','3×V6 then 2×V7, focus on explosive hip movement','Antagonist activation: push-ups <code>2×10</code>'],
+      climbing:['4×4s: <code>4 hard problems (V7–V9) × 4 rounds, 3 min rest between rounds</code>','Or: system board linked problems for 20 min','Finish with 2–3 moderate route laps as cool-down'],
+      strength:['Front lever progressions: <code>3×5s tuck or advanced tuck</code>','Weighted dips: <code>4×8 at +10–15kg</code>','Wrist roller: <code>3 sets up + down</code>','Full lower body stretch: quads, hamstrings, hip flexors','Calf and ankle mobility for foothold precision'],
+      note:'Thursday builds the pump resistance you need outdoors. Embrace the burn — then recover well.'}
+  },
+  perf:{
+    TUE:{title:'Peak — Sharpening',
+      warmup:['Easy traversing 10 min, relaxed and loose','Progressive warm-up: 3×V6, 2×V8, 1 at V9 feeling','Specific warm-up: key moves on your project if known','Brief finger activation: 2×easy hangs at 60% effort'],
+      climbing:['Limit bouldering: <code>3–4 problems V9–V11</code>, very full rest (10 min+)','Project moves or crux sections — quality over quantity','Reduce total volume — stay fresh for the weekend'],
+      strength:['Weighted pull-ups: <code>3×3 heavy</code> — maintain, do not build','Antagonist: push-ups <code>2×15</code>, wrist extensions <code>2×12</code>','Full flexibility routine: hips, shoulders, fingers 15 min','Foam roll and recovery focus'],
+      note:'Peak phase: the heavy work is done. Trust your training. Reduce volume, protect fingers, stay sharp.'},
+    THU:{title:'Peak — Power Endurance',
+      warmup:['Easy traversing 10 min','Progressive warm-up: V5 → V7 → V9','Hip and shoulder mobility 5 min','Visualize your outdoor project — sequence through it mentally'],
+      climbing:['Targeted 4×4s: <code>4 specific-style problems × 3 rounds</code> (slightly easier than usual)','Route simulation: link crux sections with rests between','Keep session under 70 min total climbing time'],
+      strength:['Bodyweight pull-ups: <code>2×8, relaxed</code>','Core: hollow body holds <code>3×20s</code>, L-sit <code>2×15s</code>','Full flexibility session 20 min','Address any niggles now — ice, compression, rest if needed'],
+      note:'Last hard session before the weekend. Stay conservative — arriving at the crag rested is the entire goal.'}
+  }
+};
+
+// ── NON-GYM DETAIL ────────────────────────────────────────────────────────────
+function nonGymDetail(phase,abbr){
+  const common={
+    MON:{secs:[{h:'Session',items:['Easy 45–60 min ride, zone 2 (conversational pace)','Heart rate 60–70% max — if you can\'t talk, slow down','No hard efforts — this is active recovery','Optional: 10 min foam rolling or light stretching after']},{h:'Purpose',items:['Promotes blood flow to recovering tendons','Maintains aerobic base without loading fingers','Prepares you mentally and physically for Tuesday']}],note:'Keep it easy. Monday is service for Tuesday.'},
+    WED:{secs:[{h:'Session',items:['60–90 min moderate ride, zone 2–3','Optional yoga or mobility session after','Hip flexors, hamstrings, shoulder capsule focus']},{h:'Mobility',items:['Hip 90/90 stretch × 2 min per side','Pigeon pose 90s per side','Doorway chest stretch 60s','Wrist circles and extensions × 20']}],note:'Wednesday mobility pays dividends on weekend outdoor climbing.'},
+    FRI:{secs:[{h:'Recovery',items:['Full rest — no climbing, no hard training','Light stretching or foam rolling only','Sleep 8+ hours tonight']},{h:'Prep',items:['Check weather for Saturday\'s crag','Pack shoes, chalk, gear, food','Plan approach and target routes or problems','Visualize your project sequences']}],note:'Friday rest is non-negotiable. Skin and fingers need it before Saturday.'},
+    SAT:{secs:[{h:'Session',items:['Thorough warm-up: 30–40 min on easy terrain','4–6 attempts on your project with full rest between (20–30 min)','Stop projecting when power noticeably drops','Volume on moderate routes after project work']},{h:'Strategy',items:['Prioritize sequences during warm-up','Note what beta works and what doesn\'t','Don\'t waste attempts when you\'re tired','Enjoy the movement on easier routes after']}],note:'Saturday is your primary send day. Everything in the week built toward this.'},
+    SUN:{secs:[{h:'If Climbing',items:['Pick a different style than Saturday (slabs if you went steep)','Lower intensity — volume not sends','Great for trad, longer routes, or technique focus','Stop if fingers or tendons feel sore at all']},{h:'If Resting',items:['Full rest if Saturday was long or hard','Skin recovery takes priority','Prep nutrition and sleep for the coming week','Reflect on what worked and what to adjust']}],note:'Two consecutive hard outdoor days accumulate fast at V9+. Err toward rest when in doubt.'}
+  };
+  const overrides={
+    deload:{
+      MON:{secs:[{h:'Session',items:['Easy 30–45 min gentle ride or walk','Very relaxed — this is full recovery week','Alternative: light swimming or yoga']},{h:'Body Check',items:['Scan for any soreness or niggles','Note anything needing extra rest','Sleep more than usual this week']}],note:'Deload week: do less than you think you need.'},
+      WED:{secs:[{h:'Session',items:['Gentle 45 min ride or yoga class','Full body mobility routine — no intensity','Pay attention to your body\'s signals']},{h:'Mobility',items:['Extended hip flexor work 3 min per side','Thoracic spine mobility rotations','Forearm and finger stretching']}],note:'Tendons need this quiet week to consolidate adaptation.'},
+      FRI:{secs:[{h:'Recovery',items:['Complete rest — truly do nothing strenuous','Walk, eat well, sleep well','Mentally prepare for Phase 2 ramping up']},{h:'Prep',items:['Plan Phase 2 goals and target problems','Check gear and hangboard setup','Visualize stepping up intensity next week']}],note:'Arrive in Phase 2 feeling hungry and 100% fresh.'}
+    },
+    power:{
+      MON:{secs:[{h:'Session',items:['Easy 50–60 min zone 2 ride','Flush Tuesday\'s session — keep very easy','Fingers need full recovery before Thursday']},{h:'Body Check',items:['Check fingers for soreness (mild pump = normal)','Any sharp pain = rest and reassess Tuesday','Hydrate well — connective tissue needs it']}],note:'Power phase Monday: even more critical to keep easy. Tuesday was intense.'}
+    },
+    perf:{
+      MON:{secs:[{h:'Session',items:['Easy 40 min recovery ride or full rest','Very gentle — protect fingers for the week','Mental rehearsal: visualize your project in detail']},{h:'Mindset',items:['Review beta from last weekend','The physical work is done — trust it','Focus shifts to execution this week']}],note:'Peak phase: every decision this week prioritizes sending. Stay fresh.'},
+      WED:{secs:[{h:'Session',items:['Light 45 min ride or complete rest','No hard efforts outside of gym this week','Prioritize sleep (8–9 hrs) and nutrition']},{h:'Prep',items:['Plan Saturday project session in detail','Study the route or problem mentally','Pack everything tonight so Friday is stress-free']}],note:'Wednesday in peak phase: protect your freshness at all costs.'},
+      SAT:{secs:[{h:'This Is It',items:['This is what the 8 weeks built toward','Thorough 40 min warm-up on easy terrain','Go for your project — trust the training','4–6 max attempts with complete rest between']},{h:'Send Tips',items:['Shake out completely at every rest position','Breathe slowly before crux sequences','If you fall, read what happened before going again','If you send — celebrate, then do easy laps']}],note:'Peak phase Saturday: commit fully. The training is done — now it\'s time to climb.'}
+    }
+  };
+  const o=overrides[phase]?.[abbr];
+  if(o)return o;
+  return common[abbr];
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderPhaseBanner(){
+  const el=document.getElementById('phaseBanner');
+  el.innerHTML='';
+  const cur=getPhase(currentWeek);
+  PHASES.forEach(p=>{
+    const d=document.createElement('div');
+    d.className=`phase-block${p.id===cur?' active-phase':''}`;
+    d.onclick=()=>{currentWeek=p.id==='base'?0:p.id==='power'?4:6;activeDay=null;document.getElementById('detailPanel').classList.remove('visible');render();};
+    d.innerHTML=`<div class="phase-num">${p.id==='base'?'PHASE 1':p.id==='power'?'PHASE 2':'PHASE 3'}</div>
+      <div class="phase-name" style="color:${p.color}">${p.name}</div>
+      <div class="phase-weeks">${p.weeks}</div>
+      <div class="phase-desc">${p.desc}</div>
+      <div class="phase-bar ${p.barClass}"></div>`;
+    el.appendChild(d);
+  });
+}
+
+function renderRoadmap(){
+  const el=document.getElementById('roadmap');
+  el.innerHTML='';
+  WEEK_PHASES.forEach((wp,i)=>{
+    const d=document.createElement('div');
+    d.className=`roadmap-week rw-${wp.phase}${i===currentWeek?' rw-active':''}`;
+    d.onclick=()=>{currentWeek=i;activeDay=null;document.getElementById('detailPanel').classList.remove('visible');render();};
+    d.innerHTML=`<div class="rw-num">${i+1}</div><div class="rw-label">${wp.label}</div>`;
+    el.appendChild(d);
+  });
+}
+
+function renderWeekNav(){
+  const wp=WEEK_PHASES[currentWeek];
+  const ws=new Date(programStart);ws.setDate(programStart.getDate()+currentWeek*7);
+  const we=new Date(ws);we.setDate(ws.getDate()+6);
+  const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  document.getElementById('weekLabel').textContent=`WEEK ${currentWeek+1} OF 8 — ${fmt(ws).toUpperCase()} – ${fmt(we).toUpperCase()}`;
+  const tag=document.getElementById('weekPhaseTag');
+  const cls=wp.phase==='base'?'tag-base':wp.phase==='deload'?'tag-deload':wp.phase==='power'?'tag-power':'tag-perf';
+  tag.className=`week-phase-tag ${cls}`;tag.textContent=wp.label;
+  document.getElementById('prevBtn').disabled=currentWeek===0;
+  document.getElementById('nextBtn').disabled=currentWeek===7;
+}
+
+function renderCalendar(){
+  const phase=getPhase(currentWeek);
+  const ws=new Date(programStart);ws.setDate(programStart.getDate()+currentWeek*7);
+  const today=new Date();today.setHours(0,0,0,0);
+  const cal=document.getElementById('calendar');cal.innerHTML='';
+  DAYS.forEach((abbr,i)=>{
+    const date=new Date(ws);date.setDate(ws.getDate()+i);date.setHours(0,0,0,0);
+    const cfg=dayConfig(phase,abbr);
+    const isToday=date.getTime()===today.getTime();
+    const col=document.createElement('div');
+    col.className=`day-col${isToday?' today':''}${activeDay===abbr?' active':''}`;
+    col.onclick=()=>toggleDetail(abbr);
+    col.innerHTML=`<div class="day-header"><div class="day-abbr">${abbr}</div><div class="day-num">${date.getDate()}</div><div class="day-type-dot ${cfg.dotClass}"></div></div>
+      <div class="day-content"><span class="day-type-label ${cfg.labelClass}">${cfg.label}</span><div class="day-title">${cfg.title}</div>
+      <ul class="day-bullets">${cfg.bullets.map(b=>`<li>${b}</li>`).join('')}</ul></div>`;
+    cal.appendChild(col);
+  });
+}
+
+function toggleDetail(abbr){
+  const panel=document.getElementById('detailPanel');
+  const phase=getPhase(currentWeek);
+  if(activeDay===abbr){activeDay=null;panel.classList.remove('visible');renderCalendar();return;}
+  activeDay=abbr;renderCalendar();
+  const cfg=dayConfig(phase,abbr);
+  const isGym=(abbr==='TUE'||abbr==='THU');
+  let html=`<div class="detail-top"><div class="detail-header">
+    <div class="detail-day-name">${DAY_NAMES[abbr]}</div>
+    <div class="detail-type">${cfg.label.toUpperCase()}</div>
+    <div class="detail-phase-note">${WEEK_PHASES[currentWeek].label}</div>
+  </div></div>`;
+
+  if(isGym){
+    const s=GYM[phase]?.[abbr];
+    if(s){
+      html+=`<div class="session-blocks">
+        <div class="session-block" style="border-top:2px solid var(--sky)">
+          <div class="session-block-header"><div class="session-num" style="color:var(--sky)">01</div><div class="session-block-title">Warm-Up</div></div>
+          <ul class="session-items">${s.warmup.map(i=>`<li>${i}</li>`).join('')}</ul>
+        </div>
+        <div class="session-block" style="border-top:2px solid var(--purple-light)">
+          <div class="session-block-header"><div class="session-num" style="color:var(--purple-light)">02</div><div class="session-block-title">Climbing</div></div>
+          <ul class="session-items">${s.climbing.map(i=>`<li>${i}</li>`).join('')}</ul>
+        </div>
+        <div class="session-block" style="border-top:2px solid var(--moss-light)">
+          <div class="session-block-header"><div class="session-num" style="color:var(--moss-light)">03</div><div class="session-block-title">Strength & Flexibility</div></div>
+          <ul class="session-items">${s.strength.map(i=>`<li>${i}</li>`).join('')}</ul>
+        </div>
+      </div>
+      <div class="session-foot">${s.note}</div>`;
+    }
+  } else {
+    const d=nonGymDetail(phase,abbr);
+    if(d){
+      html+=`<div class="detail-sections">
+        ${d.secs.map(sec=>`<div class="detail-section"><h3>${sec.h}</h3><ul class="detail-list">${sec.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`).join('')}
+        ${d.note?`<div class="detail-note">${d.note}</div>`:''}
+      </div>`;
+    }
+  }
+  panel.innerHTML=html;panel.classList.add('visible');
+}
+
+function changeWeek(dir){
+  currentWeek=Math.max(0,Math.min(7,currentWeek+dir));
+  activeDay=null;document.getElementById('detailPanel').classList.remove('visible');render();
+}
+
+function buildTracker(){
+  const rows=document.getElementById('trackerRows');rows.innerHTML='';
+  const saved=JSON.parse(localStorage.getItem('sendtrain-v3')||'{}');
+  for(let w=0;w<8;w++){
+    const wp=WEEK_PHASES[w];
+    const row=document.createElement('div');row.className='tracker-row';
+    const wl=document.createElement('div');wl.className='tracker-week-label';wl.textContent=`W${w+1}`;row.appendChild(wl);
+    DAYS.forEach((abbr,d)=>{
+      const key=`${w}-${d}`;const state=saved[key]||'none';
+      const cell=document.createElement('div');
+      cell.className=`tracker-cell${state==='done'?' done':state==='skipped'?' skipped':''}`;
+      cell.innerHTML=`<span>${abbr[0]}</span>`;
+      cell.onclick=()=>{
+        const s=JSON.parse(localStorage.getItem('sendtrain-v3')||'{}');
+        const cur=s[key]||'none';s[key]=cur==='none'?'done':cur==='done'?'skipped':'none';
+        localStorage.setItem('sendtrain-v3',JSON.stringify(s));
+        cell.className=`tracker-cell${s[key]==='done'?' done':s[key]==='skipped'?' skipped':''}`;
+      };
+      row.appendChild(cell);
+    });
+    rows.appendChild(row);
+  }
+}
+
+function render(){renderPhaseBanner();renderRoadmap();renderWeekNav();renderCalendar();}
+render();buildTracker();
+</script>
+</body>
+</html>
