@@ -156,6 +156,8 @@
   .edit-btn.active{border-color:var(--rope);color:var(--rope);background:rgba(200,118,58,0.1);}
   .reset-btn{background:none;border:1px solid var(--granite);color:var(--slate);font-family:'DM Mono',monospace;font-size:11px;padding:6px 12px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;display:none;}
   .reset-btn:hover{border-color:var(--red-light);color:var(--red-light);}
+  .export-btn{background:none;border:1px solid var(--moss);color:var(--moss-light);font-family:'DM Mono',monospace;font-size:12px;padding:8px 16px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;margin-left:8px;}
+  .export-btn:hover{background:rgba(74,103,65,0.15);border-color:var(--moss-light);}
 
   .item-row{display:flex;align-items:flex-start;gap:6px;width:100%;}
   .item-del{display:none;background:none;border:none;color:var(--granite);cursor:pointer;font-size:13px;line-height:1;padding:2px 3px;flex-shrink:0;margin-top:2px;transition:color 0.15s;}
@@ -201,6 +203,7 @@
   <button class="week-btn" id="nextBtn" onclick="changeWeek(1)">NEXT →</button>
   <button class="edit-btn" id="editBtn" onclick="toggleEdit()">EDIT SESSION</button>
   <button class="reset-btn" id="resetBtn" onclick="resetSession()">RESET DEFAULT</button>
+  <button class="export-btn" onclick="exportHTML()">↓ EXPORT HTML</button>
 </div>
 
 <div class="calendar" id="calendar"></div>
@@ -431,17 +434,30 @@ function renderCalendar(){
 
 // ── EDIT STATE ────────────────────────────────────────────────────────────────
 let editMode=false;
+const _cache={};
 
 function saveKey(){return `sendtrain-edit-w${currentWeek}-${activeDay}`;}
 
 function loadCustom(){
-  const raw=localStorage.getItem(saveKey());
-  return raw?JSON.parse(raw):null;
+  const k=saveKey();
+  return _cache[k]!==undefined?_cache[k]:null;
 }
 
-function saveCustom(data){
-  localStorage.setItem(saveKey(),JSON.stringify(data));
+async function saveCustom(data){
+  const k=saveKey();
+  _cache[k]=data;
+  try{await window.storage.set(k,JSON.stringify(data));}catch(e){console.warn('storage.set failed',e);}
   document.getElementById('resetBtn').style.display='inline-block';
+}
+
+async function loadAllFromStorage(){
+  try{
+    const result=await window.storage.list('sendtrain-edit-');
+    if(!result||!result.keys)return;
+    await Promise.all(result.keys.map(async k=>{
+      try{const r=await window.storage.get(k);if(r&&r.value)_cache[k]=JSON.parse(r.value);}catch(e){}
+    }));
+  }catch(e){console.warn('storage.list failed',e);}
 }
 
 function toggleEdit(){
@@ -454,7 +470,7 @@ function toggleEdit(){
   if(!editMode) commitEdit();
 }
 
-function commitEdit(){
+async function commitEdit(){
   // collect all inline inputs and save
   const panel=document.getElementById('detailPanel');
   const isGym=(activeDay==='TUE'||activeDay==='THU');
@@ -544,10 +560,12 @@ function toggleDetail(abbr){
   document.getElementById('resetBtn').style.display=loadCustom()?'inline-block':'none';
 }
 
-function resetSession(){
+async function resetSession(){
   if(!activeDay)return;
-  if(!confirm(`Reset ${activeDay} (Week ${currentWeek+1}) to default? Your edits will be lost.`))return;
-  localStorage.removeItem(saveKey());
+  if(!confirm('Reset '+activeDay+' (Week '+(currentWeek+1)+') to default? Your edits will be lost.'))return;
+  const k=saveKey();
+  delete _cache[k];
+  try{await window.storage.delete(k);}catch(e){}
   document.getElementById('resetBtn').style.display='none';
   toggleDetail(activeDay);toggleDetail(activeDay);
 }
@@ -558,23 +576,22 @@ function changeWeek(dir){
   activeDay=null;document.getElementById('detailPanel').classList.remove('visible');document.getElementById('resetBtn').style.display='none';render();
 }
 
-function buildTracker(){
+async function buildTracker(){
   const rows=document.getElementById('trackerRows');rows.innerHTML='';
-  const saved=JSON.parse(localStorage.getItem('sendtrain-v3')||'{}');
+  let saved={};
+  try{const r=await window.storage.get('sendtrain-tracker');if(r&&r.value)saved=JSON.parse(r.value);}catch(e){}
   for(let w=0;w<8;w++){
-    const wp=WEEK_PHASES[w];
     const row=document.createElement('div');row.className='tracker-row';
-    const wl=document.createElement('div');wl.className='tracker-week-label';wl.textContent=`W${w+1}`;row.appendChild(wl);
+    const wl=document.createElement('div');wl.className='tracker-week-label';wl.textContent='W'+(w+1);row.appendChild(wl);
     DAYS.forEach((abbr,d)=>{
-      const key=`${w}-${d}`;const state=saved[key]||'none';
+      const key=w+'-'+d;const state=saved[key]||'none';
       const cell=document.createElement('div');
-      cell.className=`tracker-cell${state==='done'?' done':state==='skipped'?' skipped':''}`;
-      cell.innerHTML=`<span>${abbr[0]}</span>`;
-      cell.onclick=()=>{
-        const s=JSON.parse(localStorage.getItem('sendtrain-v3')||'{}');
-        const cur=s[key]||'none';s[key]=cur==='none'?'done':cur==='done'?'skipped':'none';
-        localStorage.setItem('sendtrain-v3',JSON.stringify(s));
-        cell.className=`tracker-cell${s[key]==='done'?' done':s[key]==='skipped'?' skipped':''}`;
+      cell.className='tracker-cell'+(state==='done'?' done':state==='skipped'?' skipped':'');
+      cell.innerHTML='<span>'+abbr[0]+'</span>';
+      cell.onclick=async()=>{
+        const cur=saved[key]||'none';saved[key]=cur==='none'?'done':cur==='done'?'skipped':'none';
+        try{await window.storage.set('sendtrain-tracker',JSON.stringify(saved));}catch(e){}
+        cell.className='tracker-cell'+(saved[key]==='done'?' done':saved[key]==='skipped'?' skipped':'');
       };
       row.appendChild(cell);
     });
@@ -582,8 +599,34 @@ function buildTracker(){
   }
 }
 
+async function exportHTML(){
+  // Collect all custom edits from storage
+  let customData={};
+  try{
+    const result=await window.storage.list('sendtrain-edit-');
+    if(result&&result.keys){
+      await Promise.all(result.keys.map(async k=>{
+        try{const r=await window.storage.get(k);if(r&&r.value)customData[k]=JSON.parse(r.value);}catch(e){}
+      }));
+    }
+  }catch(e){}
+
+  // Get the current page HTML and inject customData as a pre-loaded cache
+  const src=document.documentElement.outerHTML;
+  const injection='\n  // ── BAKED-IN EDITS ──\n  Object.assign(_cache,'+JSON.stringify(customData)+');\n';
+  // Insert after the _cache={} declaration
+  const baked=src.replace('const _cache={};', 'const _cache={};'+injection);
+
+  const blob=new Blob([baked],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='index.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 function render(){renderPhaseBanner();renderRoadmap();renderWeekNav();renderCalendar();}
-render();buildTracker();
+loadAllFromStorage().then(()=>{render();buildTracker();});
 </script>
 </body>
 </html>
