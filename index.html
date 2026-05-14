@@ -266,17 +266,17 @@ function dayConfig(phase,abbr){
   const base={
     MON:{type:'bike',label:'Biking',dotClass:'dot-bike',labelClass:'label-bike',title:'Recovery Ride',bullets:['Easy zone 2, 45–60 min','Flush fatigue','No hard efforts']},
     TUE:{type:'climb',label:'Gym Climbing',dotClass:'dot-climb',labelClass:'label-climb',
-      title:phase==='base'?'Fingers & Volume':phase==='deload'?'Light Climbing':phase==='power'?'Max Hangs & Limit':'Sharpening Session',
-      bullets:phase==='base'?['Hangboard repeaters','ARC climbing 20 min','Weighted pull-ups']:
+      title:phase==='base'?'Recruitment & Bouldering':phase==='deload'?'Light Climbing':phase==='power'?'Max Hangs & Limit':'Sharpening Session',
+      bullets:phase==='base'?['Recruitment pulls (Tindeq)','Bouldering 1–1.5hr sub-limit','Strength & Conditioning']:
               phase==='deload'?['Easy problems only','No projecting','Mobility focus']:
-              phase==='power'?['Max hangs weighted','Limit bouldering V9–V11','Campus optional']:
-              ['Limit problems × 3–4','Project moves','Reduced volume']},
+              phase==='power'?['Max hangs × 5 sets','Limit bouldering 1–1.5hr','Strength & Conditioning']:
+              ['Max hangs × 5 sets','Limit bouldering 1–1.5hr','Strength & Conditioning']},
     WED:{type:'bike',label:'Biking',dotClass:'dot-bike',labelClass:'label-bike',title:'Active Recovery',bullets:['Moderate 60–90 min ride','Optional yoga','Hip & shoulder focus']},
     THU:{type:'climb',label:'Gym Climbing',dotClass:'dot-climb',labelClass:'label-climb',
       title:phase==='base'?'Endurance & Conditioning':phase==='deload'?'Movement & Mobility':phase==='power'?'4×4s & Strength':'Power Endurance',
-      bullets:phase==='base'?['ARCing 2×20 min','Volume bouldering','Antagonist work']:
+      bullets:phase==='base'?['Hangboard repeaters','ARCing 3×10 min','Volume bouldering: flash grade']:
               phase==='deload'?['Moderate V4–V6 only','Downclimbing drill','Light antagonists']:
-              phase==='power'?['4×4s V7–V9','Front lever progressions','Weighted dips']:
+              phase==='power'?['Repeaters × 4 sets','Progressive V5→V8, then 4×4s','Strength & Conditioning']:
               ['Targeted 4×4s × 3 rounds','Route simulation','Full flexibility']},
     FRI:{type:'rest',label:'Rest',dotClass:'dot-rest',labelClass:'label-rest',title:'Rest & Prep',bullets:['Full rest','Pack gear','Check weather']},
     SAT:{type:'outdoor',label:'Outdoor',dotClass:'dot-outdoor',labelClass:'label-outdoor',
@@ -293,51 +293,51 @@ function dayConfig(phase,abbr){
 const GYM={
   base:{
     TUE:{title:'Base — Fingers',
-      warmup:['Easy traversing 10 min, footwork focus','Progressive problems: 5×V4 then 5×V6','Wrist circles and finger tendon warm-up 5 min','Shoulder CARs × 10 each side'],
-      climbing:['Hangboard repeaters: <code>7s on / 3s off × 6 reps × 4 sets</code>, 20mm edge','ARC climbing: 20 min continuous on easy terrain (no shaking off)','Technique focus: silent feet on every problem'],
-      strength:['Weighted pull-ups: <code>4×8 at +10–15kg</code>','Ring rows: <code>3×12</code>','Dead hangs on rings: <code>3×20s</code>','Hip flexor stretch 2 min per side','Shoulder capsule and chest opener stretches'],
-      note:'Base phase: volume over intensity. Tendons adapt slowly — never skip the warm-up.'},
+      warmup:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>'],
+      climbing:['Recruitment pulls (Tindeq / tension block): <code>2–3 sets × 3–4 reps each hand</code> — 1–3s max effort, 5s rest between reps, 3–4 min rest between sets — flex fingers only, track peak force each rep','Bouldering: <code>1–1.5hr, sub-limit, 2–3 attempts to send</code> — not projecting, not flashing','Technique focus: silent feet on every problem'],
+      strength:['Weighted pull-ups: <code>3 × 3 w/ 80 lb</code>','Ring rows or dumbbells: <code>3 × 10</code>','Ring tricep dips: <code>3 × 8</code>','Band face pulls: <code>3 × 10</code>','Windshield wipers: <code>3 × 10</code>'],
+      note:'Base phase: volume over intensity. Tendons adapt slowly — never skip the warm-up.',cooldown:['Lat stretch on bar: <code>30s each side</code>','Sleeper stretch: <code>30s each side</code>','Pigeon pose: <code>90s each side</code>','Hip 90/90: <code>60s each side</code>','Cat / cow: <code>10 reps</code>','Thoracic rotation: <code>10 reps each side</code>']},
     THU:{title:'Base — Endurance',
-      warmup:['Easy traversing 10 min','Dynamic movement: hip rocking, leg swings, arm circles','3×V4 focusing on body tension and hip engagement','Antagonist warm-up: push-up negatives × 10'],
-      climbing:['ARCing: <code>2×20 min</code> on juggy moderate terrain, rest 5 min between sets','Volume bouldering: 10–15 problems at V5–V7','Read every move before you climb each problem'],
-      strength:['Antagonist circuit: push-ups <code>3×20</code>, dips <code>3×12</code>','Wrist extensions with light weight: <code>3×15</code>','Reverse curls: <code>3×15</code>','Pigeon pose 90s per side','Hamstring and hip flexor stretching 10 min'],
-      note:'Thursday builds your aerobic base and conditions joints. Keep it controlled and deliberate.'}
+      warmup:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>'],
+      climbing:['Hangboard repeaters: <code>7s on / 3s off × 6 reps × 4 sets</code>','ARCing: <code>3 x 10 min</code> on juggy moderate terrain, rest 3 min between sets','Volume bouldering: <code>flash grade, 20 climbs in 1hr</code>','Read every move before you climb each problem'],
+      strength:['Push-ups: <code>3 x 15</code>','Band face pulls: <code>3 x 15</code>','Ring rows: <code>3 x 12</code> (bodyweight only)','Hollow body hold: <code>3 x 20s</code>','L-sit: <code>3 x 10s</code>','Dead bug: <code>3 x 10 each side</code>','Wrist extensions: <code>3 x 15</code>'],
+      note:'Volume day — hard cap at V8. Stay at flash grade (V7–V8) for the 20-climb block, V5–V6 for ARCing. Thursday should leave you tired but not destroyed. If your fingers feel worked Friday morning, you went too hard. Save the limit efforts for Tuesday.',cooldown:['Lat stretch on bar: <code>30s each side</code>','Sleeper stretch: <code>30s each side</code>','Pigeon pose: <code>90s each side</code>','Hip 90/90: <code>60s each side</code>','Cat / cow: <code>10 reps</code>','Thoracic rotation: <code>10 reps each side</code>']}
   },
   deload:{
     TUE:{title:'Deload — Active Recovery',
-      warmup:['Easy traversing 10 min, very relaxed pace','Joint mobility: wrists, shoulders, hips 5 min','3–4 easy problems, focus on movement quality only'],
+      warmup:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>'],
       climbing:['Light bouldering: 8–10 problems at V5–V6 max','No limit problems, no projecting today','Focus on technique and efficiency over difficulty'],
-      strength:['Bodyweight pull-ups: <code>2×6, easy</code>','Shoulder circles and resistance band work','Full flexibility routine 15–20 min','Foam roll: forearms, lats, thoracic spine'],
-      note:'Deload week — resist the urge to train hard. This rest is what makes Phase 2 possible.'},
+      strength:['Bodyweight pull-ups: <code>2 × 6, easy</code>','Shoulder circles and resistance band work','Wrist extensions: <code>2 × 12</code>'],
+      note:'Deload week — resist the urge to train hard. This rest is what makes Phase 2 possible.',cooldown:['Lat stretch on bar: <code>30s each side</code>','Sleeper stretch: <code>30s each side</code>','Pigeon pose: <code>90s each side</code>','Hip 90/90: <code>60s each side</code>','Cat / cow: <code>10 reps</code>','Thoracic rotation: <code>10 reps each side</code>']},
     THU:{title:'Deload — Movement & Mobility',
-      warmup:['Easy traversing 10 min','Hip CARs × 10 per side','3 easy problems, movement focus only'],
+      warmup:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>'],
       climbing:['Moderate problems V4–V6, footwork precision focus','Downclimb every problem you climb up','Experiment with body position: open hip, drop knee, backflag'],
-      strength:['Light antagonist: push-ups <code>2×10</code>, wrist extensions <code>2×12</code>','Yoga flow or full body stretch 20 min','Scan for any niggles or soreness — note them'],
-      note:'If anything feels sore or tweaky this week, take an extra rest day — better to arrive in Phase 2 at 100%.'}
+      strength:['Push-ups: <code>2 × 10</code>','Wrist extensions: <code>2 × 12</code>','Scan for any niggles or soreness — note them'],
+      note:'If anything feels sore or tweaky this week, take an extra rest day — better to arrive in Phase 2 at 100%.',cooldown:['Lat stretch on bar: <code>30s each side</code>','Sleeper stretch: <code>30s each side</code>','Pigeon pose: <code>90s each side</code>','Hip 90/90: <code>60s each side</code>','Cat / cow: <code>10 reps</code>','Thoracic rotation: <code>10 reps each side</code>']}
   },
   power:{
     TUE:{title:'Power — Max Hangs',
-      warmup:['Easy traversing 15 min, progressively harder','3×V6 then 2×V8 warm-up problems','Finger tendon activation: progressive hangs at 40%, 60%, 80% effort','Band pull-aparts: <code>2×15</code>'],
-      climbing:['Max hangs: <code>10s on / 3 min rest × 5–6 sets</code>, 20mm half-crimp, add weight','Limit bouldering: <code>4–6 problems V9–V11</code>, full rest between (8–10 min each)','Campus board if feeling strong: <code>1–3 ladder sets max</code>'],
-      strength:['Weighted pull-ups: <code>5×3 at heavy load (+25–35kg)</code>','Ring muscle-up negatives: <code>3×3–5</code>','L-sit holds: <code>3×15s</code>','Shoulder and chest stretching','Wrist flexion and extension mobility work'],
-      note:'Power phase: intensity is high. If fingers feel off, drop the weight. Never push through finger pain.'},
+      warmup:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>'],
+      climbing:['Max hangs (20mm half-crimp): <code>5 × 10s on / 3 min rest</code> — add weight each set, track peak force on Tindeq','Limit bouldering: <code>1–1.5hr, V9–V11, full rest between burns (8–10 min)</code> — projecting is fine here','Campus board if feeling strong: <code>1–3 ladder sets max</code>'],
+      strength:['Weighted pull-ups: <code>5 × 3 w/ 95 lb</code>','Ring rows or dumbbells: <code>3 × 10</code>','Ring tricep dips: <code>3 × 8</code>','Band face pulls: <code>3 × 10</code>','Windshield wipers: <code>3 × 10</code>'],
+      note:'Power phase: intensity is high. Max hangs before bouldering while fingers are fresh. If fingers feel off, drop the weight. Never push through finger pain.',cooldown:['Lat stretch on bar: <code>30s each side</code>','Sleeper stretch: <code>30s each side</code>','Pigeon pose: <code>90s each side</code>','Hip 90/90: <code>60s each side</code>','Cat / cow: <code>10 reps</code>','Thoracic rotation: <code>10 reps each side</code>']},
     THU:{title:'Power — Strength Endurance',
-      warmup:['Easy traversing 10 min','Dynamic stretches: leg swings, hip circles, arm swings','3×V6 then 2×V7, focus on explosive hip movement','Antagonist activation: push-ups <code>2×10</code>'],
-      climbing:['4×4s: <code>4 hard problems (V7–V9) × 4 rounds, 3 min rest between rounds</code>','Or: system board linked problems for 20 min','Finish with 2–3 moderate route laps as cool-down'],
-      strength:['Front lever progressions: <code>3×5s tuck or advanced tuck</code>','Weighted dips: <code>4×8 at +10–15kg</code>','Wrist roller: <code>3 sets up + down</code>','Full lower body stretch: quads, hamstrings, hip flexors','Calf and ankle mobility for foothold precision'],
-      note:'Thursday builds the pump resistance you need outdoors. Embrace the burn — then recover well.'}
+      warmup:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>'],
+      climbing:['Hangboard repeaters: <code>7s on / 3s off × 6 reps × 4 sets</code>','Progressive bouldering: <code>2–3 problems each at V5 → V6 → V7 → V8</code> — full rest between, building into the 4×4s','4×4s: <code>4 problems at V5–V6 × 4 rounds, 3 min rest between rounds</code> — pump tolerance focus'],
+      strength:['Push-ups: <code>3 × 15</code>','Band face pulls: <code>3 × 15</code>','Ring rows: <code>3 × 12</code> (bodyweight only)','Hollow body hold: <code>3 × 20s</code>','L-sit: <code>3 × 10s</code>','Dead bug: <code>3 × 10 each side</code>','Wrist extensions: <code>3 × 15</code>'],
+      note:'Thursday builds the pump resistance you need outdoors. Embrace the burn — then recover well.',cooldown:['Lat stretch on bar: <code>30s each side</code>','Sleeper stretch: <code>30s each side</code>','Pigeon pose: <code>90s each side</code>','Hip 90/90: <code>60s each side</code>','Cat / cow: <code>10 reps</code>','Thoracic rotation: <code>10 reps each side</code>']}
   },
   perf:{
     TUE:{title:'Peak — Sharpening',
-      warmup:['Easy traversing 10 min, relaxed and loose','Progressive warm-up: 3×V6, 2×V8, 1 at V9 feeling','Specific warm-up: key moves on your project if known','Brief finger activation: 2×easy hangs at 60% effort'],
+      warmup:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>'],
       climbing:['Limit bouldering: <code>3–4 problems V9–V11</code>, very full rest (10 min+)','Project moves or crux sections — quality over quantity','Reduce total volume — stay fresh for the weekend'],
-      strength:['Weighted pull-ups: <code>3×3 heavy</code> — maintain, do not build','Antagonist: push-ups <code>2×15</code>, wrist extensions <code>2×12</code>','Full flexibility routine: hips, shoulders, fingers 15 min','Foam roll and recovery focus'],
-      note:'Peak phase: the heavy work is done. Trust your training. Reduce volume, protect fingers, stay sharp.'},
+      strength:['Weighted pull-ups: <code>3 × 3 w/ 80 lb</code> — maintain, do not build','Ring rows or dumbbells: <code>3 × 10</code>','Ring tricep dips: <code>3 × 8</code>','Band face pulls: <code>3 × 10</code>','Windshield wipers: <code>3 × 10</code>'],
+      note:'Peak phase: the heavy work is done. Trust your training. Reduce volume, protect fingers, stay sharp.',cooldown:['Lat stretch on bar: <code>30s each side</code>','Sleeper stretch: <code>30s each side</code>','Pigeon pose: <code>90s each side</code>','Hip 90/90: <code>60s each side</code>','Cat / cow: <code>10 reps</code>','Thoracic rotation: <code>10 reps each side</code>']},
     THU:{title:'Peak — Power Endurance',
-      warmup:['Easy traversing 10 min','Progressive warm-up: V5 → V7 → V9','Hip and shoulder mobility 5 min','Visualize your outdoor project — sequence through it mentally'],
+      warmup:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>'],
       climbing:['Targeted 4×4s: <code>4 specific-style problems × 3 rounds</code> (slightly easier than usual)','Route simulation: link crux sections with rests between','Keep session under 70 min total climbing time'],
-      strength:['Bodyweight pull-ups: <code>2×8, relaxed</code>','Core: hollow body holds <code>3×20s</code>, L-sit <code>2×15s</code>','Full flexibility session 20 min','Address any niggles now — ice, compression, rest if needed'],
-      note:'Last hard session before the weekend. Stay conservative — arriving at the crag rested is the entire goal.'}
+      strength:['Bodyweight pull-ups: <code>2 × 8, relaxed</code>','Hollow body holds: <code>3 × 20s</code>','L-sit: <code>2 × 15s</code>','Band face pulls: <code>3 × 10</code>','Address any niggles — ice, compression, rest if needed'],
+      note:'Last hard session before the weekend. Stay conservative — arriving at the crag rested is the entire goal.',cooldown:['Lat stretch on bar: <code>30s each side</code>','Sleeper stretch: <code>30s each side</code>','Pigeon pose: <code>90s each side</code>','Hip 90/90: <code>60s each side</code>','Cat / cow: <code>10 reps</code>','Thoracic rotation: <code>10 reps each side</code>']}
   }
 };
 
@@ -347,8 +347,8 @@ function nonGymDetail(phase,abbr){
     MON:{secs:[{h:'Session',items:['Easy 45–60 min ride, zone 2 (conversational pace)','Heart rate 60–70% max — if you can\'t talk, slow down','No hard efforts — this is active recovery','Optional: 10 min foam rolling or light stretching after']},{h:'Purpose',items:['Promotes blood flow to recovering tendons','Maintains aerobic base without loading fingers','Prepares you mentally and physically for Tuesday']}],note:'Keep it easy. Monday is service for Tuesday.'},
     WED:{secs:[{h:'Session',items:['60–90 min moderate ride, zone 2–3','Optional yoga or mobility session after','Hip flexors, hamstrings, shoulder capsule focus']},{h:'Mobility',items:['Hip 90/90 stretch × 2 min per side','Pigeon pose 90s per side','Doorway chest stretch 60s','Wrist circles and extensions × 20']}],note:'Wednesday mobility pays dividends on weekend outdoor climbing.'},
     FRI:{secs:[{h:'Recovery',items:['Full rest — no climbing, no hard training','Light stretching or foam rolling only','Sleep 8+ hours tonight']},{h:'Prep',items:['Check weather for Saturday\'s crag','Pack shoes, chalk, gear, food','Plan approach and target routes or problems','Visualize your project sequences']}],note:'Friday rest is non-negotiable. Skin and fingers need it before Saturday.'},
-    SAT:{secs:[{h:'Session',items:['Thorough warm-up: 30–40 min on easy terrain','4–6 attempts on your project with full rest between (20–30 min)','Stop projecting when power noticeably drops','Volume on moderate routes after project work']},{h:'Strategy',items:['Prioritize sequences during warm-up','Note what beta works and what doesn\'t','Don\'t waste attempts when you\'re tired','Enjoy the movement on easier routes after']}],note:'Saturday is your primary send day. Everything in the week built toward this.'},
-    SUN:{secs:[{h:'If Climbing',items:['Pick a different style than Saturday (slabs if you went steep)','Lower intensity — volume not sends','Great for trad, longer routes, or technique focus','Stop if fingers or tendons feel sore at all']},{h:'If Resting',items:['Full rest if Saturday was long or hard','Skin recovery takes priority','Prep nutrition and sleep for the coming week','Reflect on what worked and what to adjust']}],note:'Two consecutive hard outdoor days accumulate fast at V9+. Err toward rest when in doubt.'}
+    SAT:{secs:[{h:'Warm-Up',items:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>']},{h:'Session',items:['4–6 attempts on your project with full rest between (20–30 min)','Stop projecting when power noticeably drops','Volume on moderate routes after project work']},{h:'Strategy',items:['Prioritize sequences during warm-up','Note what beta works and what doesn\'t','Don\'t waste attempts when you\'re tired','Enjoy the movement on easier routes after']}],note:'Saturday is your primary send day. Everything in the week built toward this.'},
+    SUN:{secs:[{h:'Warm-Up',items:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>']},{h:'If Climbing',items:['Pick a different style than Saturday (slabs if you went steep)','Lower intensity — volume not sends','Great for trad, longer routes, or technique focus','Stop if fingers or tendons feel sore at all']},{h:'If Resting',items:['Full rest if Saturday was long or hard','Skin recovery takes priority','Prep nutrition and sleep for the coming week','Reflect on what worked and what to adjust']}],note:'Two consecutive hard outdoor days accumulate fast at V9+. Err toward rest when in doubt.'}
   };
   const overrides={
     deload:{
@@ -362,7 +362,7 @@ function nonGymDetail(phase,abbr){
     perf:{
       MON:{secs:[{h:'Session',items:['Easy 40 min recovery ride or full rest','Very gentle — protect fingers for the week','Mental rehearsal: visualize your project in detail']},{h:'Mindset',items:['Review beta from last weekend','The physical work is done — trust it','Focus shifts to execution this week']}],note:'Peak phase: every decision this week prioritizes sending. Stay fresh.'},
       WED:{secs:[{h:'Session',items:['Light 45 min ride or complete rest','No hard efforts outside of gym this week','Prioritize sleep (8–9 hrs) and nutrition']},{h:'Prep',items:['Plan Saturday project session in detail','Study the route or problem mentally','Pack everything tonight so Friday is stress-free']}],note:'Wednesday in peak phase: protect your freshness at all costs.'},
-      SAT:{secs:[{h:'This Is It',items:['This is what the 8 weeks built toward','Thorough 40 min warm-up on easy terrain','Go for your project — trust the training','4–6 max attempts with complete rest between']},{h:'Send Tips',items:['Shake out completely at every rest position','Breathe slowly before crux sequences','If you fall, read what happened before going again','If you send — celebrate, then do easy laps']}],note:'Peak phase Saturday: commit fully. The training is done — now it\'s time to climb.'}
+      SAT:{secs:[{h:'Warm-Up',items:['Dynamic movement: <code>hip rocking, leg swings, arm circles</code>','Walking lunges / side lunges: <code>10 each side</code>','Wrist circles: <code>2 x 20s</code>','Wrist flexor stretch: <code>30s each side</code>','Wrist extensor stretch: <code>30s each side</code>','Finger prayer stretch: <code>30s</code>','Band Shoulder External Rotators: <code>3 x 10</code>','Scapular pull-ups / push-ups: <code>2 x 8</code>','Straight bar overhead shoulder stretch: <code>2 x 30s</code>','Doorway chest opener: <code>2 x 30s</code>','Pull-up / Push-up: <code>2 x 10</code>','Finger tendon warm-up: <code>10 min</code>']},{h:'This Is It',items:['This is what the 8 weeks built toward','Go for your project — trust the training','4–6 max attempts with complete rest between']},{h:'Send Tips',items:['Shake out completely at every rest position','Breathe slowly before crux sequences','If you fall, read what happened before going again','If you send — celebrate, then do easy laps']}],note:'Peak phase Saturday: commit fully. The training is done — now it\'s time to climb.'}
     }
   };
   const o=overrides[phase]?.[abbr];
@@ -413,6 +413,23 @@ function renderWeekNav(){
   document.getElementById('nextBtn').disabled=currentWeek===7;
 }
 
+function stripHtml(str){return str.replace(/<[^>]*>/g,'');}
+
+function gymBullets(phase,abbr){
+  const s=(loadCustom.__phase=phase,loadCustom.__abbr=abbr,null)||(()=>{
+    const custom=localStorage&&false; // always use live data
+    return GYM[phase]&&GYM[phase][abbr]?GYM[phase][abbr]:null;
+  })();
+  const data=GYM[phase]&&GYM[phase][abbr]?GYM[phase][abbr]:null;
+  if(!data)return null;
+  // Pick 3 representative bullets: first climbing item, second climbing item, first strength item
+  const bullets=[];
+  if(data.climbing&&data.climbing[0])bullets.push(stripHtml(data.climbing[0]).split(':')[0].trim());
+  if(data.climbing&&data.climbing[1])bullets.push(stripHtml(data.climbing[1]).split(':')[0].trim());
+  if(data.strength&&data.strength[0])bullets.push(stripHtml(data.strength[0]).split(':')[0].trim());
+  return bullets.length?bullets:null;
+}
+
 function renderCalendar(){
   const phase=getPhase(currentWeek);
   const ws=new Date(programStart);ws.setDate(programStart.getDate()+currentWeek*7);
@@ -422,12 +439,15 @@ function renderCalendar(){
     const date=new Date(ws);date.setDate(ws.getDate()+i);date.setHours(0,0,0,0);
     const cfg=dayConfig(phase,abbr);
     const isToday=date.getTime()===today.getTime();
+    const isGym=(abbr==='TUE'||abbr==='THU');
+    const liveBullets=isGym?gymBullets(phase,abbr):null;
+    const bullets=liveBullets||cfg.bullets;
     const col=document.createElement('div');
     col.className=`day-col${isToday?' today':''}${activeDay===abbr?' active':''}`;
     col.onclick=()=>toggleDetail(abbr);
     col.innerHTML=`<div class="day-header"><div class="day-abbr">${abbr}</div><div class="day-num">${date.getDate()}</div><div class="day-type-dot ${cfg.dotClass}"></div></div>
       <div class="day-content"><span class="day-type-label ${cfg.labelClass}">${cfg.label}</span><div class="day-title">${cfg.title}</div>
-      <ul class="day-bullets">${cfg.bullets.map(b=>`<li>${b}</li>`).join('')}</ul></div>`;
+      <ul class="day-bullets">${bullets.map(b=>`<li>${b}</li>`).join('')}</ul></div>`;
     cal.appendChild(col);
   });
 }
@@ -460,14 +480,20 @@ async function loadAllFromStorage(){
   }catch(e){console.warn('storage.list failed',e);}
 }
 
-function toggleEdit(){
+async function toggleEdit(){
   if(!activeDay){alert('Open a day first, then click Edit Session.');return;}
   editMode=!editMode;
   document.body.classList.toggle('edit-mode',editMode);
   const btn=document.getElementById('editBtn');
   btn.classList.toggle('active',editMode);
   btn.textContent=editMode?'DONE EDITING':'EDIT SESSION';
-  if(!editMode) commitEdit();
+  if(!editMode){
+    await commitEdit();
+    // Re-render the panel so autoFormat applies and inputs are replaced with formatted text
+    const day=activeDay;
+    activeDay=null;
+    toggleDetail(day);
+  }
 }
 
 async function commitEdit(){
@@ -506,12 +532,24 @@ function addItem(listEl){
   const inp=li.querySelector('.item-input');if(inp){inp.focus();inp.select();}
 }
 
+function autoFormat(text){
+  // Strip existing code tags to get raw text, then re-apply formatting
+  const raw=text.replace(/<code>(.*?)<\/code>/g,'$1');
+  // After a colon, wrap the rest in code styling
+  return raw.replace(/^([^:]+:)\s*(.+)$/,'$1 <code>$2</code>');
+}
+
+function rawText(item){
+  // Strip HTML tags to get plain text for input value
+  return item.replace(/<[^>]*>/g,'');
+}
+
 function renderItemList(items,sec){
   return items.map((item,i)=>`<li>
     <div class="item-row">
       <button class="item-del" onclick="this.closest('li').remove()">✕</button>
-      <span class="item-text">${item}</span>
-      <input class="item-input" type="text" value="${item.replace(/"/g,'&quot;').replace(/<[^>]*>/g,'')}">
+      <span class="item-text">${autoFormat(item)}</span>
+      <input class="item-input" type="text" value="${rawText(item).replace(/"/g,'&quot;')}">
     </div></li>`).join('');
 }
 
@@ -534,7 +572,7 @@ function toggleDetail(abbr){
     const custom=loadCustom();
     const s=custom||base;
     if(s){
-      const secs=[['warmup','Warm-Up','var(--sky)','01'],['climbing','Climbing','var(--purple-light)','02'],['strength','Strength & Flexibility','var(--moss-light)','03']];
+      const secs=[['warmup','Warm-Up','var(--sky)','01'],['climbing','Climbing','var(--purple-light)','02'],['strength','Strength & Conditioning','var(--moss-light)','03'],['cooldown','Cool-Down & Stretching','var(--slate)','04']];
       html+=`<div class="session-blocks">`;
       secs.forEach(([key,title,color,num])=>{
         html+=`<div class="session-block" style="border-top:2px solid ${color}">
@@ -626,7 +664,24 @@ async function exportHTML(){
 }
 
 function render(){renderPhaseBanner();renderRoadmap();renderWeekNav();renderCalendar();}
-loadAllFromStorage().then(()=>{render();buildTracker();});
+// ── CACHE BUSTER ─────────────────────────────────────────────────────────────
+// Bump this version string whenever workouts are baked in, to wipe stale storage
+const BAKE_VERSION='2025-01-v24';
+async function bustStaleCache(){
+  const vkey='sendtrain-bake-version';
+  let stored=null;
+  try{const r=await window.storage.get(vkey);if(r&&r.value)stored=r.value;}catch(e){}
+  if(stored===BAKE_VERSION)return; // already busted
+  // Delete all workout edits so baked-in defaults take over
+  try{
+    const result=await window.storage.list('sendtrain-edit-');
+    if(result&&result.keys){
+      await Promise.all(result.keys.map(k=>window.storage.delete(k).catch(()=>{})));
+    }
+  }catch(e){}
+  try{await window.storage.set(vkey,BAKE_VERSION);}catch(e){}
+}
+bustStaleCache().then(()=>loadAllFromStorage()).then(()=>{render();buildTracker();});
 </script>
 </body>
 </html>
