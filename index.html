@@ -149,6 +149,31 @@
     .calendar{grid-template-columns:repeat(4,1fr);}
     header{flex-direction:column;align-items:flex-start;}
   }
+
+  /* ── EDIT MODE ── */
+  .edit-btn{background:none;border:1px solid var(--granite);color:var(--limestone);font-family:'DM Mono',monospace;font-size:12px;padding:8px 16px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;}
+  .edit-btn:hover{border-color:var(--rope);color:var(--rope);}
+  .edit-btn.active{border-color:var(--rope);color:var(--rope);background:rgba(200,118,58,0.1);}
+  .reset-btn{background:none;border:1px solid var(--granite);color:var(--slate);font-family:'DM Mono',monospace;font-size:11px;padding:6px 12px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;display:none;}
+  .reset-btn:hover{border-color:var(--red-light);color:var(--red-light);}
+
+  .item-row{display:flex;align-items:flex-start;gap:6px;width:100%;}
+  .item-del{display:none;background:none;border:none;color:var(--granite);cursor:pointer;font-size:13px;line-height:1;padding:2px 3px;flex-shrink:0;margin-top:2px;transition:color 0.15s;}
+  .item-del:hover{color:var(--red-light);}
+  .item-text{flex:1;}
+  .item-input{display:none;flex:1;background:rgba(200,118,58,0.07);border:none;border-bottom:1px solid var(--rope);color:var(--chalk);font-family:'DM Sans',sans-serif;font-size:13px;padding:2px 4px;outline:none;line-height:1.5;width:100%;}
+  .add-item-btn{display:none;width:100%;background:none;border:1px dashed var(--granite);color:var(--slate);font-family:'DM Mono',monospace;font-size:10px;padding:6px;cursor:pointer;letter-spacing:0.1em;margin-top:10px;transition:all 0.15s;}
+  .add-item-btn:hover{border-color:var(--rope);color:var(--rope);}
+  .note-input{display:none;width:100%;background:rgba(200,118,58,0.07);border:none;border-left:2px solid var(--rope);color:var(--limestone);font-family:'DM Sans',sans-serif;font-size:12px;font-style:italic;padding:14px 22px;outline:none;resize:vertical;line-height:1.6;}
+
+  body.edit-mode .item-del{display:inline-block;}
+  body.edit-mode .add-item-btn{display:block;}
+  body.edit-mode .item-input{display:block;}
+  body.edit-mode .item-text{display:none;}
+  body.edit-mode .note-input{display:block;}
+  body.edit-mode .session-foot .note-text{display:none;}
+  body.edit-mode .session-items li::before{display:none;}
+  body.edit-mode .detail-list li::before{display:none;}
 </style>
 </head>
 <body>
@@ -174,6 +199,8 @@
   <span class="week-phase-tag" id="weekPhaseTag"></span>
   <button class="week-btn" id="prevBtn" onclick="changeWeek(-1)">← PREV</button>
   <button class="week-btn" id="nextBtn" onclick="changeWeek(1)">NEXT →</button>
+  <button class="edit-btn" id="editBtn" onclick="toggleEdit()">EDIT SESSION</button>
+  <button class="reset-btn" id="resetBtn" onclick="resetSession()">RESET DEFAULT</button>
 </div>
 
 <div class="calendar" id="calendar"></div>
@@ -402,10 +429,81 @@ function renderCalendar(){
   });
 }
 
+// ── EDIT STATE ────────────────────────────────────────────────────────────────
+let editMode=false;
+
+function saveKey(){return `sendtrain-edit-w${currentWeek}-${activeDay}`;}
+
+function loadCustom(){
+  const raw=localStorage.getItem(saveKey());
+  return raw?JSON.parse(raw):null;
+}
+
+function saveCustom(data){
+  localStorage.setItem(saveKey(),JSON.stringify(data));
+  document.getElementById('resetBtn').style.display='inline-block';
+}
+
+function toggleEdit(){
+  if(!activeDay){alert('Open a day first, then click Edit Session.');return;}
+  editMode=!editMode;
+  document.body.classList.toggle('edit-mode',editMode);
+  const btn=document.getElementById('editBtn');
+  btn.classList.toggle('active',editMode);
+  btn.textContent=editMode?'DONE EDITING':'EDIT SESSION';
+  if(!editMode) commitEdit();
+}
+
+function commitEdit(){
+  // collect all inline inputs and save
+  const panel=document.getElementById('detailPanel');
+  const isGym=(activeDay==='TUE'||activeDay==='THU');
+  const phase=getPhase(currentWeek);
+  if(isGym){
+    const s=loadCustom()||JSON.parse(JSON.stringify(GYM[phase]?.[activeDay]||{}));
+    ['warmup','climbing','strength'].forEach(sec=>{
+      const inputs=panel.querySelectorAll(`.session-items[data-sec="${sec}"] .item-input`);
+      if(inputs.length){s[sec]=[...inputs].map(i=>i.value).filter(v=>v.trim());}
+    });
+    const ni=panel.querySelector('.note-input');if(ni)s.note=ni.value;
+    saveCustom(s);
+  } else {
+    const d=loadCustom()||JSON.parse(JSON.stringify(nonGymDetail(phase,activeDay)||{secs:[],note:''}));
+    panel.querySelectorAll('.detail-section').forEach((sec,si)=>{
+      const inputs=sec.querySelectorAll('.item-input');
+      if(d.secs[si])d.secs[si].items=[...inputs].map(i=>i.value).filter(v=>v.trim());
+    });
+    const ni=panel.querySelector('.note-input');if(ni)d.note=ni.value;
+    saveCustom(d);
+  }
+  document.getElementById('resetBtn').style.display='inline-block';
+}
+
+function deleteItem(listEl,idx){
+  const li=listEl.querySelectorAll('li')[idx];if(li)li.remove();
+}
+
+function addItem(listEl){
+  const li=document.createElement('li');
+  li.innerHTML=`<div class="item-row"><button class="item-del" onclick="this.closest('li').remove()">✕</button><span class="item-text"></span><input class="item-input" type="text" value="New item — edit me" style="display:block"></div>`;
+  listEl.appendChild(li);
+  const inp=li.querySelector('.item-input');if(inp){inp.focus();inp.select();}
+}
+
+function renderItemList(items,sec){
+  return items.map((item,i)=>`<li>
+    <div class="item-row">
+      <button class="item-del" onclick="this.closest('li').remove()">✕</button>
+      <span class="item-text">${item}</span>
+      <input class="item-input" type="text" value="${item.replace(/"/g,'&quot;').replace(/<[^>]*>/g,'')}">
+    </div></li>`).join('');
+}
+
 function toggleDetail(abbr){
+  if(editMode){editMode=false;document.body.classList.remove('edit-mode');document.getElementById('editBtn').classList.remove('active');document.getElementById('editBtn').textContent='EDIT SESSION';commitEdit();}
   const panel=document.getElementById('detailPanel');
   const phase=getPhase(currentWeek);
-  if(activeDay===abbr){activeDay=null;panel.classList.remove('visible');renderCalendar();return;}
+  if(activeDay===abbr){activeDay=null;panel.classList.remove('visible');renderCalendar();document.getElementById('resetBtn').style.display='none';return;}
   activeDay=abbr;renderCalendar();
   const cfg=dayConfig(phase,abbr);
   const isGym=(abbr==='TUE'||abbr==='THU');
@@ -416,39 +514,48 @@ function toggleDetail(abbr){
   </div></div>`;
 
   if(isGym){
-    const s=GYM[phase]?.[abbr];
+    const base=GYM[phase]?.[abbr];
+    const custom=loadCustom();
+    const s=custom||base;
     if(s){
-      html+=`<div class="session-blocks">
-        <div class="session-block" style="border-top:2px solid var(--sky)">
-          <div class="session-block-header"><div class="session-num" style="color:var(--sky)">01</div><div class="session-block-title">Warm-Up</div></div>
-          <ul class="session-items">${s.warmup.map(i=>`<li>${i}</li>`).join('')}</ul>
-        </div>
-        <div class="session-block" style="border-top:2px solid var(--purple-light)">
-          <div class="session-block-header"><div class="session-num" style="color:var(--purple-light)">02</div><div class="session-block-title">Climbing</div></div>
-          <ul class="session-items">${s.climbing.map(i=>`<li>${i}</li>`).join('')}</ul>
-        </div>
-        <div class="session-block" style="border-top:2px solid var(--moss-light)">
-          <div class="session-block-header"><div class="session-num" style="color:var(--moss-light)">03</div><div class="session-block-title">Strength & Flexibility</div></div>
-          <ul class="session-items">${s.strength.map(i=>`<li>${i}</li>`).join('')}</ul>
-        </div>
-      </div>
-      <div class="session-foot">${s.note}</div>`;
+      const secs=[['warmup','Warm-Up','var(--sky)','01'],['climbing','Climbing','var(--purple-light)','02'],['strength','Strength & Flexibility','var(--moss-light)','03']];
+      html+=`<div class="session-blocks">`;
+      secs.forEach(([key,title,color,num])=>{
+        html+=`<div class="session-block" style="border-top:2px solid ${color}">
+          <div class="session-block-header"><div class="session-num" style="color:${color}">${num}</div><div class="session-block-title">${title}</div></div>
+          <ul class="session-items" data-sec="${key}">${renderItemList(s[key]||[],key)}</ul>
+          <button class="add-item-btn" onclick="addItem(this.previousElementSibling)">+ ADD ITEM</button>
+        </div>`;
+      });
+      html+=`</div><div class="session-foot"><span class="note-text">${s.note}</span><textarea class="note-input" rows="2">${s.note}</textarea></div>`;
     }
   } else {
-    const d=nonGymDetail(phase,abbr);
+    const base=nonGymDetail(phase,abbr);
+    const custom=loadCustom();
+    const d=custom||base;
     if(d){
       html+=`<div class="detail-sections">
-        ${d.secs.map(sec=>`<div class="detail-section"><h3>${sec.h}</h3><ul class="detail-list">${sec.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`).join('')}
-        ${d.note?`<div class="detail-note">${d.note}</div>`:''}
+        ${d.secs.map(sec=>`<div class="detail-section"><h3>${sec.h}</h3><ul class="detail-list">${renderItemList(sec.items,'')}</ul><button class="add-item-btn" onclick="addItem(this.previousElementSibling)">+ ADD ITEM</button></div>`).join('')}
+        ${d.note?`<div class="detail-note"><span class="note-text">${d.note}</span><textarea class="note-input" rows="2">${d.note}</textarea></div>`:''}
       </div>`;
     }
   }
   panel.innerHTML=html;panel.classList.add('visible');
+  document.getElementById('resetBtn').style.display=loadCustom()?'inline-block':'none';
+}
+
+function resetSession(){
+  if(!activeDay)return;
+  if(!confirm(`Reset ${activeDay} (Week ${currentWeek+1}) to default? Your edits will be lost.`))return;
+  localStorage.removeItem(saveKey());
+  document.getElementById('resetBtn').style.display='none';
+  toggleDetail(activeDay);toggleDetail(activeDay);
 }
 
 function changeWeek(dir){
+  if(editMode){editMode=false;document.body.classList.remove('edit-mode');document.getElementById('editBtn').classList.remove('active');document.getElementById('editBtn').textContent='EDIT SESSION';commitEdit();}
   currentWeek=Math.max(0,Math.min(7,currentWeek+dir));
-  activeDay=null;document.getElementById('detailPanel').classList.remove('visible');render();
+  activeDay=null;document.getElementById('detailPanel').classList.remove('visible');document.getElementById('resetBtn').style.display='none';render();
 }
 
 function buildTracker(){
