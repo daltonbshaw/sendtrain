@@ -287,9 +287,9 @@
   .j-cond-btn{background:var(--rock);border:1px solid var(--granite);color:var(--limestone);font-family:'DM Sans',sans-serif;font-size:11px;padding:5px 10px;cursor:pointer;transition:all 0.15s;}
   .j-cond-btn:hover{border-color:var(--rope);color:var(--chalk);}
   .j-cond-btn.selected{background:rgba(200,118,58,0.15);border-color:var(--rope);color:var(--rope-light);}
-  .j-climbs-header{display:grid;grid-template-columns:80px 1fr 110px 32px;gap:6px;padding:0 0 6px;border-bottom:1px solid var(--granite);margin-bottom:6px;}
+  .j-climbs-header{display:grid;grid-template-columns:70px 1fr 130px 28px;gap:6px;padding:0 0 6px;border-bottom:1px solid var(--granite);margin-bottom:6px;}
   .j-climbs-header span{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;color:var(--slate);}
-  .j-climb-row{display:grid;grid-template-columns:80px 1fr 110px 32px;gap:6px;margin-bottom:6px;align-items:center;}
+  .j-climb-row{display:grid;grid-template-columns:70px 1fr 130px 28px;gap:6px;margin-bottom:6px;align-items:center;}
   .j-cinput{background:var(--rock);border:1px solid var(--granite);color:var(--chalk);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 8px;outline:none;width:100%;transition:border-color 0.15s;}
   .j-cinput:focus{border-color:var(--rope);}
   .j-cselect{background:var(--rock);border:1px solid var(--granite);color:var(--chalk);font-family:'DM Mono',monospace;font-size:10px;padding:6px 8px;outline:none;width:100%;cursor:pointer;color-scheme:dark;}
@@ -329,7 +329,7 @@
   .j-sent-btn{background:none;border:1px solid var(--granite);color:var(--slate);font-family:'DM Mono',monospace;font-size:9px;padding:5px 7px;cursor:pointer;white-space:nowrap;transition:all 0.15s;letter-spacing:0.05em;}
   .j-sent-btn.yes{background:rgba(74,103,65,0.25);border-color:var(--moss-light);color:var(--moss-light);}
   .j-entry-notes{font-size:13px;color:var(--limestone);line-height:1.7;font-style:italic;margin-top:12px;padding-top:12px;border-top:1px solid var(--granite);}
-  @media(max-width:600px){.j-form-grid{grid-template-columns:1fr;}.j-climbs-header,.j-climb-row{grid-template-columns:70px 1fr 90px 28px;}}
+  @media(max-width:600px){.j-form-grid{grid-template-columns:1fr;}.j-climbs-header,.j-climb-row{grid-template-columns:60px 1fr 120px 24px;}}
 </style>
 </head>
 <body>
@@ -522,6 +522,48 @@
 
 </div>
 <script>
+// ── SUPABASE ──────────────────────────────────────────────────────────────────
+const SUPA_URL='https://vlesayhgfgwvfxeyupdk.supabase.co';
+const SUPA_KEY='sb_publishable_krTnYw7cp8NcGhyFZ_5xyg_im3XgLJV';
+
+async function supaGet(table,id){
+  try{
+    const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(id),{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    const rows=await r.json();
+    return rows&&rows[0]?rows[0].data:null;
+  }catch(e){return null;}
+}
+
+async function supaSet(table,id,data){
+  try{
+    await fetch(SUPA_URL+'/rest/v1/'+table,{
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({id,data,updated_at:new Date().toISOString()})
+    });
+  }catch(e){console.warn('supaSet failed',e);}
+}
+
+async function supaGetAll(table){
+  try{
+    const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?select=id,data&limit=1000',{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    return await r.json();
+  }catch(e){return [];}
+}
+
+async function supaDelete(table,id){
+  try{
+    await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(id),{
+      method:'DELETE',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+  }catch(e){}
+}
+
 const WEEK_PHASES=[
   {phase:'base',label:'BASE W1'},{phase:'base',label:'BASE W2'},{phase:'base',label:'BASE W3'},
   {phase:'deload',label:'DELOAD'},
@@ -755,18 +797,14 @@ function loadCustom(){
 function saveCustom(data){
   const k=saveKey();
   _cache[k]=data;
-  try{
-    const all=JSON.parse(localStorage.getItem('sendtrain-edits')||'{}');
-    all[k]=data;
-    localStorage.setItem('sendtrain-edits',JSON.stringify(all));
-  }catch(e){}
+  supaSet('sendtrain_edits',k,data);
   document.getElementById('resetBtn').style.display='inline-block';
 }
 
-function loadAllFromStorage(){
+async function loadAllFromStorage(){
   try{
-    const all=JSON.parse(localStorage.getItem('sendtrain-edits')||'{}');
-    Object.assign(_cache,all);
+    const rows=await supaGetAll('sendtrain_edits');
+    rows.forEach(r=>{if(r.id&&r.data)_cache[r.id]=r.data;});
   }catch(e){}
 }
 
@@ -893,11 +931,7 @@ async function resetSession(){
   if(!confirm('Reset '+activeDay+' (Week '+(currentWeek+1)+') to default? Your edits will be lost.'))return;
   const k=saveKey();
   delete _cache[k];
-  try{
-    const all=JSON.parse(localStorage.getItem('sendtrain-edits')||'{}');
-    delete all[k];
-    localStorage.setItem('sendtrain-edits',JSON.stringify(all));
-  }catch(e){}
+  try{await supaDelete('sendtrain_edits',k);}catch(e){}
   document.getElementById('resetBtn').style.display='none';
   toggleDetail(activeDay);toggleDetail(activeDay);
 }
@@ -911,7 +945,7 @@ function changeWeek(dir){
 async function buildTracker(){
   const rows=document.getElementById('trackerRows');rows.innerHTML='';
   let saved={};
-  try{saved=JSON.parse(localStorage.getItem('sendtrain-tracker')||'{}');}catch(e){}
+  try{const td=await supaGet('sendtrain_tracker','main');if(td)saved=td;}catch(e){}
   for(let w=0;w<8;w++){
     const row=document.createElement('div');row.className='tracker-row';
     const wl=document.createElement('div');wl.className='tracker-week-label';wl.textContent='W'+(w+1);row.appendChild(wl);
@@ -922,7 +956,7 @@ async function buildTracker(){
       cell.innerHTML='<span>'+abbr[0]+'</span>';
       cell.onclick=async()=>{
         const cur=saved[key]||'none';saved[key]=cur==='none'?'done':cur==='done'?'skipped':'none';
-        try{localStorage.setItem('sendtrain-tracker',JSON.stringify(saved));}catch(e){}
+        try{supaSet('sendtrain_tracker','main',saved);}catch(e){}
         cell.className='tracker-cell'+(saved[key]==='done'?' done':saved[key]==='skipped'?' skipped':'');
       };
       row.appendChild(cell);
@@ -934,8 +968,8 @@ async function buildTracker(){
 async function exportHTML(){
   let customData={};
   let prData={};
-  try{customData=JSON.parse(localStorage.getItem('sendtrain-edits')||'{}');}catch(e){}
-  try{prData=JSON.parse(localStorage.getItem('sendtrain-prs')||'{}');}catch(e){}
+  try{customData=JSON.parse(JSON.stringify(_cache));}catch(e){}
+  try{prData=JSON.parse(JSON.stringify(_prCache));}catch(e){}
   const src=document.documentElement.outerHTML;
   let baked=src.replace('const _cache={};','const _cache={};\n  Object.assign(_cache,'+JSON.stringify(customData)+');');
   baked=baked.replace('const _prCache={};','const _prCache={}; Object.assign(_prCache,'+JSON.stringify(prData)+');');
@@ -957,12 +991,15 @@ const PR_METRICS=[
 // In-memory PR cache — baked in on export
 const _prCache={};
 
-function loadAllPRs(){
-  try{Object.assign(_prCache,JSON.parse(localStorage.getItem('sendtrain-prs')||'{}'));}catch(e){}
+async function loadAllPRs(){
+  try{
+    const rows=await supaGetAll('sendtrain_prs');
+    rows.forEach(r=>{if(r.id&&r.data)_prCache[r.id]=r.data;});
+  }catch(e){}
 }
 
 function saveAllPRs(){
-  try{localStorage.setItem('sendtrain-prs',JSON.stringify(_prCache));}catch(e){}
+  Object.keys(_prCache).forEach(id=>supaSet('sendtrain_prs',id,_prCache[id]));
 }
 
 function getPRLog(id){return _prCache[id]||[];}
@@ -1082,7 +1119,7 @@ function switchPage(page){
   const labels={training:'TRAINING PLAN',prs:'PR TRACKER',timer:'TIMER',journal:'JOURNAL'};
   document.querySelectorAll('.page-tab').forEach(t=>{if(t.textContent===labels[page])t.classList.add('active');});
   if(page==='prs'){loadAllPRs();renderPRGrid();}
-  if(page==='journal')initJournal();
+  if(page==='journal'){initJournal();}
 }
 
 // ── TIMER ─────────────────────────────────────────────────────────────────────
@@ -1252,11 +1289,14 @@ function ivRender(){
 // ── JOURNAL ───────────────────────────────────────────────────────────────────
 const _jCache={entries:[]};
 
-function loadJournal(){
-  try{const r=localStorage.getItem('sendtrain-journal');if(r)Object.assign(_jCache,JSON.parse(r));}catch(e){}
+async function loadJournal(){
+  try{
+    const rows=await supaGetAll('sendtrain_journal');
+    _jCache.entries=rows.map(r=>r.data).filter(Boolean).sort((a,b)=>b.id-a.id);
+  }catch(e){}
 }
 function saveJournal(){
-  try{localStorage.setItem('sendtrain-journal',JSON.stringify(_jCache));}catch(e){}
+  _jCache.entries.forEach(e=>supaSet('sendtrain_journal',String(e.id),e));
 }
 
 function toggleCond(btn){btn.classList.toggle('selected');}
@@ -1267,7 +1307,7 @@ function addClimbRow(){
   row.innerHTML=`<input class="j-cinput" type="text" placeholder="V8 / 5.12a">
     <input class="j-cinput" type="text" placeholder="Name or description">
     <div style="display:flex;gap:4px;align-items:center;">
-      <input class="j-cinput" type="number" min="1" max="99" placeholder="tries" style="width:54px;flex-shrink:0;">
+      <input class="j-cinput" type="number" min="1" max="99" placeholder="tries" style="width:70px;flex-shrink:0;">
       <button class="j-sent-btn" onclick="this.classList.toggle('yes')" title="Sent?">SENT?</button>
     </div>
     <button class="j-cdel" onclick="this.closest('.j-climb-row').remove()">✕</button>`;
@@ -1428,7 +1468,8 @@ function openEditJournal(id){
 
 function deleteJournalEntry(id){
   _jCache.entries=_jCache.entries.filter(e=>e.id!==id);
-  saveJournal();renderJournal();
+  supaDelete('sendtrain_journal',String(id));
+  renderJournal();
 }
 
 function initSwipeToDelete(){}
@@ -1474,12 +1515,12 @@ function renderJournal(){
 }
 initSwipeToDelete();
 
-function initJournal(){
-  loadJournal();
+async function initJournal(){
+  await loadJournal();
   const todayISO=new Date().toISOString().split('T')[0];
   const dateEl=document.getElementById('j-date');
   if(dateEl)dateEl.value=todayISO;
-  addClimbRow();
+  if(!document.querySelectorAll('.j-climb-row').length)addClimbRow();
   renderJournal();
 }
 
@@ -1487,14 +1528,13 @@ function render(){renderPhaseBanner();renderRoadmap();renderWeekNav();renderCale
 // ── CACHE BUSTER ─────────────────────────────────────────────────────────────
 // Bump this version string whenever workouts are baked in, to wipe stale storage
 const BAKE_VERSION='2025-01-v27';
-function bustStaleCache(){
-  const vkey='sendtrain-bake-version';
-  const stored=localStorage.getItem(vkey);
-  if(stored===BAKE_VERSION)return;
-  localStorage.setItem('sendtrain-edits','{}');
-  localStorage.setItem(vkey,BAKE_VERSION);
+async function initApp(){
+  render();
+  await Promise.all([loadAllFromStorage(),loadAllPRs()]);
+  render();
+  buildTracker();
 }
-bustStaleCache();loadAllFromStorage();loadAllPRs();render();buildTracker();
+initApp();
 </script>
 </body>
 </html>
